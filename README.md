@@ -1,6 +1,6 @@
 # About aws-mwaa-local-runner
 
-This repository provides a command line interface (CLI) utility that replicates an Amazon Managed Workflows for Apache Airflow (MWAA) environment locally.
+This repository provides a command line interface (CLI) utility that replicates an Amazon Managed Workflows for Apache Airflow (MWAA) environment locally. It will be used to run a kernel migration project DAG.
 
 ## About the CLI
 
@@ -11,7 +11,12 @@ The CLI builds a Docker container image locally that’s similar to a MWAA produ
 ```text
 dags/
   requirements.txt
-  tutorial.py
+  kernel-migration.py
+  input/
+    german_credit_data.csv
+  output/
+    plots/
+    dataframes/
 docker/
   .gitignore
   mwaa-local-env
@@ -78,18 +83,13 @@ By default, the `bootstrap.sh` script creates a username and password for your l
 
 - Open the Apache Airlfow UI: <http://localhost:8080/>.
 
-### Step four: Add DAGs and supporting files
+### Step four: Run Kernel Migration DAG
 
-The following section describes where to add your DAG code and supporting files. We recommend creating a directory structure similar to your MWAA environment.
-
-#### DAGs
-
-1. Add DAG code to the `dags/` folder.
-2. To run the sample code in this repository, see the `tutorial.py` file.
+In the Airflow UI go the kernel-migration DAG. Activate it and then run it.
 
 #### Requirements.txt
 
-1. Add Python dependencies to `dags/requirements.txt`.  
+1. Kernel-migration DAG  uses plotly, matplotlib, seaborn and scikit learn, they have been added to`dags/requirements.txt`.  
 2. To test a requirements.txt without running Apache Airflow, use the following script:
 
 ```bash
@@ -113,47 +113,38 @@ Installing collected packages: botocore, docutils, pyasn1, rsa, awscli, aws-batc
 Successfully installed aws-batch-0.6 awscli-1.19.21 botocore-1.20.21 docutils-0.15.2 pyasn1-0.4.8 rsa-4.7.2
 ```
 
-#### Custom plugins
+## Additional Notes for Kernel migration
 
-- Create a directory at the root of this repository, and change directories into it. This should be at the same level as `dags/` and `docker`. For example:
+1 - A lot of unnecesary plotting was removed. This was done because it was not helpful at all. Some plotting is included to demonstrate the DAG capability to do such task. 
 
-```bash
-mkdir plugins
-cd plugins
-```
+![Plot steps](images/plot.png)
 
-- Create a file for your custom plugin. For example:
+Plots are saved in dags/output/plots
 
-```bash
-virtual_python_plugin.py
-```
+![Plot location](images/plot_location.png)
 
-- (Optional) Add any Python dependencies to `dags/requirements.txt`.
+2 - Feature engineering task is simulated. The original kernel has a section about feature engineering with a function on it but is not used on the kernel.
+![Feature engineering code](images/fe_code.png)
 
-**Note**: this step assumes you have a DAG that corresponds to the custom plugin. For examples, see [MWAA Code Examples](https://docs.aws.amazon.com/mwaa/latest/userguide/sample-code.html).
+That very same function was put into the DAG with a logger that explains the step is just being simulated.
 
-## What's next?
+![Feature engineering DAG](images/fe_dag.png)
 
-- Learn how to upload the requirements.txt file to your Amazon S3 bucket in [Installing Python dependencies](https://docs.aws.amazon.com/mwaa/latest/userguide/working-dags-dependencies.html).
-- Learn how to upload the DAG code to the dags folder in your Amazon S3 bucket in [Adding or updating DAGs](https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-folder.html).
-- Learn more about how to upload the plugins.zip file to your Amazon S3 bucket in [Installing custom plugins](https://docs.aws.amazon.com/mwaa/latest/userguide/configuring-dag-import-plugins.html).
 
-## FAQs
+3 - The kernel evaluates two models but None of them is used to classify the complate dataset. In order to comply with the requirement a dataframe used in the correlation plot step is written as final step
 
-The following section contains common questions and answers you may encounter when using your Docker container image.
+Here's the model score on the original kernel:
 
-### Can I test execution role permissions using this repository?
+![Model 2 kernel score](images/kernel_model.png)
 
-- You can setup the local Airflow's boto with the intended execution role to test your DAGs with AWS operators before uploading to your Amazon S3 bucket. To setup aws connection for Airflow locally see [Airflow | AWS Connection](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-To learn more, see [Amazon MWAA Execution Role](https://docs.aws.amazon.com/mwaa/latest/userguide/mwaa-create-role.html).
+Here's the model score on the DAG:
 
-### How do I add libraries to requirements.txt and test install?
+![Model 2 DAG score](images/dag_model.png)
 
-- A `requirements.txt` file is included in the `/dags` folder of your local Docker container image. We recommend adding libraries to this file, and running locally.
+Here's the screenshot of the dataframe step succesfully writing a dataframe in dags/output/dataframes path:
 
-### What if a library is not available on PyPi.org?
+![Data write on DAG](images/data_write.png)
 
-- If a library is not available in the Python Package Index (PyPi.org), add the `--index-url` flag to the package in your `dags/requirements.txt` file. To learn more, see [Managing Python dependencies in requirements.txt](https://docs.aws.amazon.com/mwaa/latest/userguide/best-practices-dependencies.html).
 
 ## Troubleshooting
 
