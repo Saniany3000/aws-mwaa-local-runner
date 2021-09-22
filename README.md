@@ -1,6 +1,6 @@
 # About aws-mwaa-local-runner
 
-This repository provides a command line interface (CLI) utility that replicates an Amazon Managed Workflows for Apache Airflow (MWAA) environment locally. It will be used to run a kernel migration project DAG.
+This repository provides a command line interface (CLI) utility that replicates an Amazon Managed Workflows for Apache Airflow (MWAA) environment locally. It will be used to run a kernel migration project DAG taken from here: [German credit risk kernel](https://www.kaggle.com/kabure/predicting-credit-risk-model-pipeline/notebook).
 
 ## About the CLI
 
